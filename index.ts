@@ -69,7 +69,18 @@ export const autoUpdateWithTimeout = async (
   commenceBlockingUpdateCallback: () => any = () => {},
 ) => {
   // Only execute this code if we're running on a real device
-  if (!DeviceInfo.isEmulator()) {
+  let isEmulator = false
+  if (DeviceInfo) {
+    if (DeviceInfo.isEmulator()) {
+      isEmulator = true
+    }
+  } else {
+    console.log(
+      'code-push-update-on-startup: react-native-device-info is not set up correctly',
+    )
+  }
+
+  if (!isEmulator) {
     try {
       const updatePromise = await checkForUpdateWithTimeout(checkingTimeout)
 
