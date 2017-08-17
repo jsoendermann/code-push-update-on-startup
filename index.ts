@@ -1,5 +1,5 @@
 import codePush, { RemotePackage } from 'react-native-code-push'
-import DeviceInfo from 'react-native-device-info'
+const DeviceInfo = require('react-native-device-info')
 
 const resolveAfter = <T>(ms: number, val: T): Promise<T> =>
   new Promise(r => setTimeout(() => r(val), ms))
