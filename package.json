@@ -1,7 +1,7 @@
 {
   "name": "code-push-update-on-startup",
   "description": "A wrapper around react-native-code-push to spend a few seconds checking for updates on start up.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "index.js",
   "typings": "index.d.ts",
   "license": "Apache-2.0",
