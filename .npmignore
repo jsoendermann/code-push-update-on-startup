@@ -1,0 +1,4 @@
+.gitignore
+index.ts
+tsconfig.json
+yarn-error.log

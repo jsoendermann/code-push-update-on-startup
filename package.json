@@ -1,0 +1,19 @@
+{
+  "name": "code-push-update-on-startup",
+  "description": "A wrapper around react-native-code-push to spend a few seconds checking for updates on start up.",
+  "version": "0.1.0",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "react-native-code-push": "^5.0.0-beta",
+    "react-native-device-info": "^0.11.0"
+  },
+  "devDependencies": {
+    "react-native-code-push": "^5.0.0-beta",
+    "react-native-device-info": "^0.11.0",
+    "typescript": "^2.3.0"
+  }
+}
