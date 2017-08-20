@@ -1,4 +1,4 @@
-import codePush, { RemotePackage } from 'react-native-code-push'
+import codePush, { RemotePackage, LocalPackage } from 'react-native-code-push'
 const DeviceInfo = require('react-native-device-info')
 
 const resolveAfter = <T>(ms: number, val: T): Promise<T> =>
@@ -37,12 +37,18 @@ const checkForUpdateWithTimeout = (
   return Promise.race([augmentedPackagePromise, timeoutPromise])
 }
 
-// TODO pkg
-const installPackage = async (pkg: any, installImmediately: boolean) => {
+const isRemotePackage = (
+  pkg: RemotePackage | LocalPackage,
+): pkg is RemotePackage => (<RemotePackage>pkg).downloadUrl !== undefined
+
+const installPackage = async (
+  pkg: RemotePackage | LocalPackage,
+  installImmediately: boolean,
+) => {
   // Download if necessary
   // Docs: https://github.com/Microsoft/react-native-code-push/blob/master/docs/api-js.md#remotepackage
-  let localPkg
-  if (pkg.downloadUrl) {
+  let localPkg: LocalPackage
+  if (isRemotePackage(pkg)) {
     localPkg = await pkg.download()
   } else {
     localPkg = pkg
