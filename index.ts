@@ -87,10 +87,14 @@ export const autoUpdateWithTimeout = async (
   }
 
   if (!isEmulator) {
+    console.log('Commencing auto update check...')
     try {
       const updatePromise = await checkForUpdateWithTimeout(checkingTimeout)
 
       if (updatePromise.didTimeOut === true) {
+        console.log(
+          'Update check timed out, navigating away and waiting for response in background',
+        )
         // If we didn't get a response within 3 secs, we navigate away and
         // keep waiting in the background for a response
 
@@ -99,28 +103,41 @@ export const autoUpdateWithTimeout = async (
         // Download app in the background and install on next resume
         packagePromise
           .then(pkg => {
+            console.log('Auto update response received')
             if (pkg) {
+              console.log('Update available, installing on next resume')
               installPackage(pkg, false)
+            } else {
+              console.log('Auto update package is null')
             }
           })
           .catch(err => {
             // Ignore this error
           })
       } else if (updatePromise.didTimeOut === false) {
+        console.log('Auto update did not time out')
         await commenceBlockingUpdateCallback()
 
         const pkg = updatePromise.package
         if (pkg) {
+          console.log('Update is available, installing now')
           // Install the update but still navigate away after five seconds
           // so that we don't get stuck
           await Promise.race([
             installPackage(pkg, true),
             wait(installationTimeout),
           ])
+          // TODO(jan): Log whether update timed out
+          console.log('Navigating away')
+        } else {
+          console.log('Auto update package is null')
         }
       }
     } catch (e) {
+      console.log(`An error occurred while auto updating: ${e.message}`)
       // Ignore this error
     }
+  } else {
+    console.log('Running in emulator, skipping auto update')
   }
 }
