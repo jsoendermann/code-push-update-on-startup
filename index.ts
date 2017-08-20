@@ -1,4 +1,5 @@
-import codePush, { RemotePackage, LocalPackage } from 'react-native-code-push'
+import { RemotePackage, LocalPackage } from 'react-native-code-push'
+const codePush = require('react-native-code-push')
 const DeviceInfo = require('react-native-device-info')
 
 const resolveAfter = <T>(ms: number, val: T): Promise<T> =>
