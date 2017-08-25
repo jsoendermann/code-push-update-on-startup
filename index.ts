@@ -18,17 +18,13 @@ interface DidNotTimeOutData {
 
 type CheckForUpdateResult = DidTimeOutData | DidNotTimeOutData
 
-const checkForUpdateWithTimeout = (
-  timeout: number,
-): Promise<CheckForUpdateResult> => {
+const checkForUpdateWithTimeout = (timeout: number): Promise<CheckForUpdateResult> => {
   const packagePromise = codePush.checkForUpdate() as Promise<RemotePackage>
 
-  const augmentedPackagePromise = packagePromise.then(
-    (pkg): DidNotTimeOutData => ({
-      didTimeOut: false,
-      package: pkg,
-    }),
-  )
+  const augmentedPackagePromise = packagePromise.then((pkg): DidNotTimeOutData => ({
+    didTimeOut: false,
+    package: pkg,
+  }))
 
   const timeoutPromise = resolveAfter<DidTimeOutData>(timeout, {
     didTimeOut: true,
@@ -38,14 +34,10 @@ const checkForUpdateWithTimeout = (
   return Promise.race([augmentedPackagePromise, timeoutPromise])
 }
 
-const isRemotePackage = (
-  pkg: RemotePackage | LocalPackage,
-): pkg is RemotePackage => (<RemotePackage>pkg).downloadUrl !== undefined
+const isRemotePackage = (pkg: RemotePackage | LocalPackage): pkg is RemotePackage =>
+  (<RemotePackage>pkg).downloadUrl !== undefined
 
-const installPackage = async (
-  pkg: RemotePackage | LocalPackage,
-  installImmediately: boolean,
-) => {
+const installPackage = async (pkg: RemotePackage | LocalPackage, installImmediately: boolean) => {
   // Download if necessary
   // Docs: https://github.com/Microsoft/react-native-code-push/blob/master/docs/api-js.md#remotepackage
   let localPkg: LocalPackage
@@ -74,6 +66,7 @@ export const autoUpdateWithTimeout = async (
   checkingTimeout: number,
   installationTimeout: number,
   commenceBlockingUpdateCallback: () => any = () => {},
+  enableLogging: boolean = false,
 ) => {
   // Only execute this code if we're running on a real device
   let isEmulator = false
@@ -82,20 +75,20 @@ export const autoUpdateWithTimeout = async (
       isEmulator = true
     }
   } else {
-    console.log(
-      'code-push-update-on-startup: react-native-device-info is not set up correctly',
-    )
+    enableLogging &&
+      console.log('code-push-update-on-startup: react-native-device-info is not set up correctly')
   }
 
   if (!isEmulator) {
-    console.log('Commencing auto update check...')
+    enableLogging && console.log('Commencing auto update check...')
     try {
       const updatePromise = await checkForUpdateWithTimeout(checkingTimeout)
 
       if (updatePromise.didTimeOut === true) {
-        console.log(
-          'Update check timed out, navigating away and waiting for response in background',
-        )
+        enableLogging &&
+          console.log(
+            'Update check timed out, navigating away and waiting for response in background',
+          )
         // If we didn't get a response within 3 secs, we navigate away and
         // keep waiting in the background for a response
 
@@ -104,41 +97,38 @@ export const autoUpdateWithTimeout = async (
         // Download app in the background and install on next resume
         packagePromise
           .then(pkg => {
-            console.log('Auto update response received')
+            enableLogging && console.log('Auto update response received')
             if (pkg) {
-              console.log('Update available, installing on next resume')
+              enableLogging && console.log('Update available, installing on next resume')
               installPackage(pkg, false)
             } else {
-              console.log('Auto update package is null')
+              enableLogging && console.log('Auto update package is null')
             }
           })
           .catch(err => {
             // Ignore this error
           })
       } else if (updatePromise.didTimeOut === false) {
-        console.log('Auto update did not time out')
+        enableLogging && console.log('Auto update did not time out')
         await commenceBlockingUpdateCallback()
 
         const pkg = updatePromise.package
         if (pkg) {
-          console.log('Update is available, installing now')
+          enableLogging && console.log('Update is available, installing now')
           // Install the update but still navigate away after five seconds
           // so that we don't get stuck
-          await Promise.race([
-            installPackage(pkg, true),
-            wait(installationTimeout),
-          ])
+          await Promise.race([installPackage(pkg, true), wait(installationTimeout)])
           // TODO(jan): Log whether update timed out
-          console.log('Navigating away')
+          enableLogging && console.log('Navigating away')
         } else {
-          console.log('Auto update package is null')
+          enableLogging && console.log('Auto update package is null')
         }
       }
     } catch (e) {
-      console.log(`An error occurred while auto updating: ${e.message}`)
+      enableLogging && console.log(`An error occurred while auto updating: ${e.message}`)
       // Ignore this error
     }
   } else {
-    console.log('Running in emulator, skipping auto update')
+    enableLogging && console.log('Running in emulator, skipping auto update')
   }
 }
